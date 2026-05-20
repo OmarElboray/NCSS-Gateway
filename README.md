@@ -57,6 +57,7 @@ If you are modifying the backend email triggers, you will need the Supabase CLI 
 
 Bash
 npx supabase functions deploy notify-applicant-status --no-verify-jwt
+
 🔒 Security Notes
 This project utilizes Supabase's Row Level Security (RLS) policies to ensure that applicants can only view their own submissions, while reviewers can access the global queue. Environment variables and SMTP credentials are encrypted and stored in the Supabase Vault.
 
