@@ -27,53 +27,9 @@ import {
 import type { User } from "@supabase/supabase-js";
 
 const SESSION_KEY = "school_portal_session";
-const SUBMISSIONS_KEY = "school_portal_submissions";
 const USERS_KEY = "school_portal_users";
 
-const MOCK_SUBMISSIONS: Submission[] = [
-  {
-    id: "sub-1",
-    studentName: "Alex Rivera",
-    studentEmail: "alex@student.edu",
-    program: "Yale Young Global Scholars (YYGS)",
-    title: "Why I Build Software",
-    essay:
-      "From my first line of Python to leading our robotics club, technology has been the lens through which I understand the world. I want to study computer science to design tools that make education more accessible in underserved communities.",
-    status: "Under Review",
-    feedback: "",
-    submittedAt: "2026-05-10",
-    isAnonymous: false,
-  },
-  {
-    id: "sub-2",
-    studentName: "Jordan Lee",
-    studentEmail: "jordan@student.edu",
-    program: "United World Colleges (UWC)",
-    title: "Entrepreneurship and Community",
-    essay:
-      "Running a small tutoring marketplace taught me that business is not only about profit but about solving real problems for people you care about. I hope to combine finance and social impact in my undergraduate studies.",
-    status: "Pending",
-    feedback: "",
-    submittedAt: "2026-05-14",
-    isAnonymous: true,
-  },
-];
 
-function normalizeSubmission(s: Submission): Submission {
-  return { ...s, isAnonymous: Boolean(s.isAnonymous) };
-}
-
-function loadSubmissions(): Submission[] {
-  try {
-    const raw = localStorage.getItem(SUBMISSIONS_KEY);
-    if (raw) {
-      return (JSON.parse(raw) as Submission[]).map(normalizeSubmission);
-    }
-  } catch {
-    /* ignore */
-  }
-  return MOCK_SUBMISSIONS;
-}
 
 function loadRegisteredUsers(): PortalUser[] {
   try {
@@ -140,13 +96,9 @@ const PortalContext = createContext<PortalContextValue | null>(null);
 
 export function PortalProvider({ children }: { children: ReactNode }) {
   const [currentUser, setCurrentUser] = useState<PortalUser | null>(loadSession);
-  const [submissions, setSubmissions] = useState<Submission[]>(loadSubmissions);
+  const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [registeredUsers, setRegisteredUsers] = useState<PortalUser[]>(loadRegisteredUsers);
   const [authReady, setAuthReady] = useState(false);
-
-  useEffect(() => {
-    localStorage.setItem(SUBMISSIONS_KEY, JSON.stringify(submissions));
-  }, [submissions]);
 
   useEffect(() => {
     localStorage.setItem(USERS_KEY, JSON.stringify(registeredUsers));
@@ -160,6 +112,7 @@ export function PortalProvider({ children }: { children: ReactNode }) {
     }
   }, [currentUser]);
 
+  // 1. Bootstrap Authentication
   useEffect(() => {
     let cancelled = false;
 
@@ -217,6 +170,54 @@ export function PortalProvider({ children }: { children: ReactNode }) {
       unsubscribe();
     };
   }, []);
+
+  // 👉 2. NEW: Fetch LIVE Submissions from Supabase with Bulletproof Data Mapping
+  useEffect(() => {
+    if (!currentUser || !isSupabaseConfigured || !supabase) {
+      setSubmissions([]);
+      return;
+    }
+
+    const fetchLiveSubmissions = async () => {
+      if (!supabase) return; 
+
+      // 1. Fetch the data without the strict SQL ordering to prevent column-name crashes
+      const { data, error } = await supabase
+        .from("submissions")
+        .select("*");
+
+      if (error) {
+        console.error("Error fetching submissions:", error);
+        return;
+      }
+      
+      if (data) {
+        // 2. Translate the database snake_case columns to frontend camelCase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const formattedData = data.map((row: any) => ({
+          id: row.id,
+          studentName: row.student_name || row.studentName || "Unknown Student",
+          studentEmail: row.student_email || row.studentEmail || "No Email",
+          program: row.program || "Unknown Program",
+          title: row.title || "Untitled",
+          essay: row.essay || "",
+          status: row.status || "Pending",
+          feedback: row.feedback || "",
+          submittedAt: row.created_at || row.submitted_at || row.submittedAt || new Date().toISOString(),
+          isAnonymous: Boolean(row.is_anonymous || row.isAnonymous),
+        }));
+
+        // 3. Sort the array newest-to-oldest in JavaScript instead of SQL
+        const sortedData = formattedData.sort((a, b) => 
+          new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()
+        );
+
+        setSubmissions(sortedData);
+      }
+    };
+    
+    fetchLiveSubmissions();
+  }, [currentUser]);
 
   const login = useCallback(
     async (email: string, password: string, role: UserRole) => {
@@ -289,20 +290,14 @@ export function PortalProvider({ children }: { children: ReactNode }) {
           },
         });
 
-        // 🐛 THE DEBUG LOGGER: Check your browser console when you click signup!
-        console.log("SUPABASE RAW RESPONSE:", { data, error });
-
-        // 1. Catch actual errors 
         if (error) {
           return { ok: false, error: error.message };
         }
 
-        // 🚨 1.5. THE ENUMERATION BYPASS: Catches hidden duplicate emails!
         if (data?.user?.identities && data.user.identities.length === 0) {
           return { ok: false, error: "An account with this email already exists." };
         }
 
-        // 2. Handle successful signup requiring email confirmation (User exists, Session is null)
         if (data.user && !data.session) {
           return { 
             ok: true, 
@@ -311,12 +306,10 @@ export function PortalProvider({ children }: { children: ReactNode }) {
           };
         }
 
-        // 3. Fallback for catastrophic failure
         if (!data.user) {
           return { ok: false, error: "Could not create account." };
         }
 
-        // 4. Handle successful signup where they are instantly logged in
         if (data.session) {
           setCurrentUser({
             id: data.user.id,
@@ -361,6 +354,7 @@ export function PortalProvider({ children }: { children: ReactNode }) {
       let id = `sub-${Date.now()}`;
 
       if (isSupabaseConfigured && !currentUser.id.startsWith("demo-")) {
+        // 👉 Using your existing submissions-api wrapper to insert!
         const { id: dbId, error } = await insertSubmission({
           studentUserId: currentUser.id,
           studentName: currentUser.name,
@@ -373,6 +367,7 @@ export function PortalProvider({ children }: { children: ReactNode }) {
 
         if (error) {
           console.error("Supabase submission insert failed:", error);
+          return; // Stop if it fails to save to the DB
         } else if (dbId) {
           id = dbId;
         }
@@ -390,6 +385,8 @@ export function PortalProvider({ children }: { children: ReactNode }) {
         submittedAt: new Date().toISOString().slice(0, 10),
         isAnonymous: data.isAnonymous,
       };
+      
+      // Update the UI immediately without needing to refresh the page
       setSubmissions((prev) => [entry, ...prev]);
     },
     [currentUser]
@@ -399,7 +396,10 @@ export function PortalProvider({ children }: { children: ReactNode }) {
     async (id: string, updates: { status?: SubmissionStatus; feedback?: string }) => {
       if (isSupabaseConfigured && !id.startsWith("sub-")) {
         const { error } = await updateSubmissionInDb(id, updates);
-        if (error) console.error("Supabase submission update failed:", error);
+        if (error) {
+          console.error("Supabase submission update failed:", error);
+          return;
+        }
       }
 
       setSubmissions((prev) =>
