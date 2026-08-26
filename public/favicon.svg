@@ -1,0 +1,26 @@
+<svg width="240" height="240" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .ink { stroke:#0f172a; stroke-width:8; stroke-linejoin: miter; }
+    </style>
+  </defs>
+
+  <!-- back diamond (pink), rotated -->
+  <rect x="60" y="60" width="120" height="120" rx="10"
+        fill="#f9a8d4" class="ink"
+        transform="rotate(-12 120 120) translate(-10,6)"/>
+
+  <!-- shadow block behind the front square -->
+  <rect x="66" y="66" width="120" height="120" rx="10"
+        fill="#0f172a"
+        transform="rotate(3 126 126) translate(8,8)"/>
+
+  <!-- front square (yellow) with the G -->
+  <rect x="66" y="66" width="120" height="120" rx="10"
+        fill="#fde047" class="ink"
+        transform="rotate(3 126 126)"/>
+
+  <text x="126" y="150" text-anchor="middle"
+        font-family="Inter, sans-serif" font-weight="900" font-size="84"
+        fill="#0f172a" transform="rotate(3 126 126)">G</text>
+</svg>
