@@ -23,7 +23,7 @@ export default function App() {
           gap: '12px',
           marginBottom: '1rem'
         }}>
-          <img src="/logo.png" alt="NCSS Gateway" style={{ height: '40px', width: 'auto' }} />
+          <img src="/favicon.svg" alt="Gateway" style={{ height: '40px', width: 'auto' }} />
           <h1 style={{ fontSize: '1.25rem', margin: 0, fontWeight: '700' }}>NCSS Gateway</h1>
         </header>
 
