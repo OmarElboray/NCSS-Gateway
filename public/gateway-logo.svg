@@ -1,0 +1,32 @@
+<svg width="640" height="200" viewBox="0 0 640 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .ink { stroke:#0f172a; stroke-width:6; stroke-linejoin: miter; }
+      .word { font-family: 'Inter', sans-serif; font-weight: 900; fill:#0f172a; }
+    </style>
+  </defs>
+
+  <!-- mark, ~100x100 centered at (95,100) -->
+  <g>
+    <rect x="45" y="50" width="100" height="100" rx="8"
+          fill="#f9a8d4" class="ink"
+          transform="rotate(-12 95 100) translate(-8,5)"/>
+    <rect x="50" y="55" width="100" height="100" rx="8"
+          fill="#0f172a"
+          transform="rotate(3 100 105) translate(7,7)"/>
+    <rect x="50" y="55" width="100" height="100" rx="8"
+          fill="#fde047" class="ink"
+          transform="rotate(3 100 105)"/>
+    <text x="100" y="130" text-anchor="middle" font-size="70"
+          class="word" transform="rotate(3 100 105)">G</text>
+  </g>
+
+  <!-- wordmark -->
+  <g transform="translate(200,0)">
+    <text x="0" y="95" font-size="64" class="word">Gateway</text>
+    <text x="0" y="150" font-size="64" class="word">Project.</text>
+    <!-- highlight bar under "Project." echoing the site's .highlight style -->
+    <rect x="-4" y="128" width="230" height="16" fill="#fde047" transform="rotate(-1 111 136)"/>
+    <text x="0" y="150" font-size="64" class="word">Project.</text>
+  </g>
+</svg>
