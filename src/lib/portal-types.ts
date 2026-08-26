@@ -1,4 +1,4 @@
-export type UserRole = "applicant" | "reviewer";
+export type UserRole = "applicant" | "reviewer" | "admin";
 
 export type SubmissionStatus =
   | "Pending"
