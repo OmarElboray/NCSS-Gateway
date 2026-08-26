@@ -21,7 +21,7 @@ export function AdminRoute({ children }: AdminRouteProps) {
       const session = await getInitialSession();
       const email = session?.user?.email ?? currentUser?.email ?? null;
       if (!cancelled) {
-        setAllowed(isAdminEmail(email));
+        setAllowed(currentUser?.role === "admin" || isAdminEmail(email));
       }
     };
 
@@ -30,7 +30,7 @@ export function AdminRoute({ children }: AdminRouteProps) {
     return () => {
       cancelled = true;
     };
-  }, [authReady, currentUser?.email]);
+  }, [authReady, currentUser?.email, currentUser?.role]);
 
   if (!authReady || allowed === null) {
     return (
