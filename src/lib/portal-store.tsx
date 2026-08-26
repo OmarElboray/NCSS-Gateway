@@ -183,7 +183,7 @@ export function PortalProvider({ children }: { children: ReactNode }) {
 
       // 1. Fetch the data without the strict SQL ordering to prevent column-name crashes
       const { data, error } = await supabase
-        .from("submissions")
+        .from("submissions_for_reviewer")
         .select("*");
 
       if (error) {
