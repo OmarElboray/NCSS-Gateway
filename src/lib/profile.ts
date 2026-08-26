@@ -9,11 +9,14 @@ export interface AuthProfile {
 }
 
 export function dashboardPathForRole(role: UserRole): string {
+  if (role === "admin") return "/admin";
   return role === "reviewer" ? "/reviewer-dashboard" : "/applicant-dashboard";
 }
 
 function parseRole(value: string | null | undefined): UserRole {
-  return value === "reviewer" ? "reviewer" : "applicant";
+  if (value === "admin") return "admin";
+  if (value === "reviewer") return "reviewer";
+  return "applicant";
 }
 
 /** Load role and display fields from public.profiles (source of truth for routing). */
