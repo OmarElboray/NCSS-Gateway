@@ -30,10 +30,10 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    const defaultPassword = Deno.env.get("BULK_INVITE_DEFAULT_PASSWORD") ?? "gatewayncss";
+    const defaultPassword = Deno.env.get("BULK_INVITE_DEFAULT_PASSWORD");
 
-    if (!supabaseUrl || !anonKey || !serviceRoleKey) {
-      throw new Error("Missing Supabase environment configuration");
+    if (!supabaseUrl || !anonKey || !serviceRoleKey || !defaultPassword) {
+      throw new Error("Missing Supabase or BULK_INVITE_DEFAULT_PASSWORD environment configuration");
     }
 
     const authHeader = req.headers.get("Authorization");
