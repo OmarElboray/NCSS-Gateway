@@ -1,123 +1,41 @@
-/* =================================================================
-   GATEWAY DESIGN SYSTEM
-   Pulled from gateway-project.com so the Platform matches exactly.
-   Import this file, then use the classes below (happy-card, happy-btn,
-   highlight, badge-*) the same way the marketing site does.
-   ================================================================= */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-    --bg: #fffcf0;
-    --ink: #0f172a;
-    --block-blue: #93c5fd;
-    --block-green: #6ee7b7;
-    --block-yellow: #fde047;
-    --block-pink: #f9a8d4;
-}
+@layer base {
+  :root {
+    --background: 48 100% 97%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --primary: 156 72% 67%;
+    --primary-foreground: 222 47% 11%;
+    --secondary: 212 96% 78%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 48 40% 94%;
+    --muted-foreground: 222 20% 40%;
+    --accent: 327 87% 82%;
+    --accent-foreground: 222 47% 11%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 222 47% 11%;
+    --input: 222 47% 11%;
+    --ring: 222 47% 11%;
+    --radius: 0rem;
 
-/* Fonts: same Google Fonts import as the marketing site.
-   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
-   Inter = body/UI text. Space Mono = labels, tags, timestamps, anything "system-y". */
-.font-mono { font-family: 'Space Mono', monospace; }
+    /* Gateway block accent colors, for anything that needs the exact palette
+       rather than the semantic tokens above (e.g. hover states, badges). */
+    --gw-blue: 212 96% 78%;
+    --gw-green: 156 72% 67%;
+    --gw-yellow: 50 98% 64%;
+    --gw-pink: 327 87% 82%;
+  }
 
-body {
-    background-color: var(--bg);
-    color: var(--ink);
-    font-family: 'Inter', sans-serif;
-    margin: 0;
-}
+  * {
+    @apply border-border;
+  }
 
-/* Card: the base surface for panels, table containers, form sections, modals. */
-.happy-card {
-    background: white;
-    border: 4px solid var(--ink);
-    box-shadow: 8px 8px 0px var(--ink);
-    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
 }
-/* On the marketing site this lifts on hover for playfulness. On dense platform
-   UI (tables, lists of many cards) skip the hover-lift — it gets noisy fast. */
-.happy-card.interactive:hover {
-    transform: translate(-4px, -4px);
-    box-shadow: 12px 12px 0px var(--ink);
-}
-
-/* Primary button. */
-.happy-btn {
-    background: var(--block-green);
-    color: var(--ink);
-    border: 4px solid var(--ink);
-    box-shadow: 6px 6px 0px var(--ink);
-    font-weight: 800;
-    transition: all 0.15s ease-out;
-}
-.happy-btn:hover {
-    transform: translate(-2px, -2px);
-    box-shadow: 8px 8px 0px var(--ink);
-    background: var(--block-yellow);
-}
-.happy-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: 6px 6px 0px var(--ink);
-}
-
-/* Secondary/text link style, used for lighter-weight actions. */
-.happy-link {
-    font-weight: 800;
-    text-decoration: underline;
-    text-decoration-thickness: 4px;
-    text-underline-offset: 4px;
-    text-decoration-color: var(--block-yellow);
-}
-.happy-link:hover { text-decoration-color: var(--block-pink); }
-
-/* Highlight marker behind a word/phrase, e.g. page titles. */
-.highlight { position: relative; display: inline-block; z-index: 1; }
-.highlight::after {
-    content: "";
-    position: absolute;
-    bottom: 4px; left: -2px; right: -2px;
-    height: 12px;
-    background: var(--block-yellow);
-    z-index: -1;
-    transform: rotate(-1deg);
-}
-
-/* Status/tag badges — for rubric scores, submission states, opportunity tags. */
-.badge {
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    text-transform: uppercase;
-    font-weight: 700;
-    border: 2px solid var(--ink);
-    padding: 2px 8px;
-    background: var(--bg);
-    display: inline-block;
-}
-.badge-blue   { background: var(--block-blue); }
-.badge-green  { background: var(--block-green); }
-.badge-yellow { background: var(--block-yellow); }
-.badge-pink   { background: var(--block-pink); }
-
-/* Form inputs, consistent with the Request Access form on the marketing site. */
-.happy-input {
-    width: 100%;
-    border: 4px solid var(--ink);
-    padding: 12px 16px;
-    font-weight: 500;
-    background: var(--bg);
-}
-.happy-input:focus {
-    outline: none;
-    background: white;
-}
-
-/* -----------------------------------------------------------------
-   WHAT NOT TO CARRY OVER TO THE PLATFORM (by default):
-   - Custom cursor (.cursor-block / .cursor-follower + JS) — fun once,
-     tiring across a dashboard someone uses daily. Skip it here.
-   - Spinning 3D cube as ambient decoration — fine for a login screen
-     hero, not for internal pages.
-   - Heavy hover-lift on every card — turn it off for dense grids/tables,
-     keep it for a handful of featured cards (e.g. an empty-state CTA).
-   ------------------------------------------------------------------ */
