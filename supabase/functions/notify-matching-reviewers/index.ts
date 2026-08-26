@@ -34,11 +34,12 @@ Deno.serve(async (req) => {
 
   try {
     const webhookSecret = Deno.env.get("WEBHOOK_SECRET");
-    if (webhookSecret) {
-      const incoming = req.headers.get("x-webhook-secret");
-      if (incoming !== webhookSecret) {
-        return json({ error: "Unauthorized webhook" }, 401);
-      }
+    if (!webhookSecret) {
+      throw new Error("WEBHOOK_SECRET is not configured");
+    }
+    const incoming = req.headers.get("x-webhook-secret");
+    if (incoming !== webhookSecret) {
+      return json({ error: "Unauthorized webhook" }, 401);
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
