@@ -22,7 +22,7 @@ export function ReviewerExpertiseSection() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    setProgramList(loadPrograms());
+    loadPrograms().then(setProgramList);
   }, []);
 
   useEffect(() => {
