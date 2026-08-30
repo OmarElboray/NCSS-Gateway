@@ -1,4 +1,4 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { GraduationCap, LogOut, MessageSquare, Send, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -30,6 +30,31 @@ interface PortalHeaderProps {
 export function PortalHeader({ subtitle }: PortalHeaderProps) {
   const { currentUser, logout } = usePortal();
   const navigate = useNavigate();
+
+  const [emailConfirmed, setEmailConfirmed] = useState(true);
+  const [resending, setResending] = useState(false);
+
+  useEffect(() => {
+    if (!supabase) return;
+    supabase.auth.getUser().then(({ data }) => {
+      setEmailConfirmed(!!data.user?.email_confirmed_at);
+    });
+  }, []);
+
+  const handleResend = async () => {
+    if (!supabase || !currentUser?.email) return;
+    setResending(true);
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email: currentUser.email,
+    });
+    setResending(false);
+    if (error) {
+      toast.error("Couldn't resend confirmation email", { description: error.message });
+    } else {
+      toast.success("Confirmation email sent — check your inbox.");
+    }
+  };
 
   // Modal State
   const [isOpen, setIsOpen] = useState(false);
@@ -79,6 +104,7 @@ export function PortalHeader({ subtitle }: PortalHeaderProps) {
   };
 
   return (
+    <>
     <header className="border-b border-border bg-card/80 backdrop-blur-sm">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-4">
         <Link to="/" className="flex items-center gap-3">
@@ -182,5 +208,18 @@ export function PortalHeader({ subtitle }: PortalHeaderProps) {
         </div>
       </div>
     </header>
+    {!emailConfirmed && (
+      <div className="border-b-2 border-[#0f172a] bg-[hsl(var(--gw-yellow))] px-6 py-2 text-center text-sm font-bold">
+        Please confirm your email address.{" "}
+        <button
+          onClick={handleResend}
+          disabled={resending}
+          className="underline disabled:opacity-50"
+        >
+          {resending ? "Sending…" : "Resend confirmation email"}
+        </button>
+      </div>
+    )}
+    </>
   );
 }
