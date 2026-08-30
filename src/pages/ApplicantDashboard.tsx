@@ -39,7 +39,7 @@ export function ApplicantDashboard() {
   }, [authReady, currentUser, navigate]);
 
   useEffect(() => {
-    setProgramList(loadPrograms());
+    loadPrograms().then(setProgramList);
   }, []);
 
   if (!authReady) {
@@ -55,7 +55,7 @@ export function ApplicantDashboard() {
 
   const mine = submissions.filter((s) => s.studentEmail === currentUser?.email);
 
-  const submit = (e: FormEvent) => {
+  const submit = async (e: FormEvent) => {
     e.preventDefault();
 
     let finalProgram = program;
@@ -68,7 +68,7 @@ export function ApplicantDashboard() {
       finalProgram = customProgram.trim();
 
       if (!programList.includes(finalProgram)) {
-        const updated = addProgram(programList, finalProgram);
+        const updated = await addProgram(programList, finalProgram);
         setProgramList(updated);
         toast.success("Program added", {
           description: `"${finalProgram}" is now available for all applicants.`,
