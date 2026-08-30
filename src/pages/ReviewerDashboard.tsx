@@ -35,6 +35,8 @@ export function ReviewerDashboard() {
   
   const [selected, setSelected] = useState<Submission | null>(null);
   const [feedback, setFeedback] = useState("");
+  const [page, setPage] = useState(0);
+  const PAGE_SIZE = 20;
 
   // 👉 ADDED: The Dashboard Bouncer
   useEffect(() => {
@@ -157,7 +159,7 @@ export function ReviewerDashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {submissions.map((s) => (
+                    {submissions.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE).map((s) => (
                       <tr
                         key={s.id}
                         className="cursor-pointer border-b border-border/70 transition-colors hover:bg-secondary/40"
@@ -185,6 +187,31 @@ export function ReviewerDashboard() {
                     ))}
                   </tbody>
                 </table>
+                {submissions.length > PAGE_SIZE && (
+                  <div className="mt-4 flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">
+                      Page {page + 1} of {Math.ceil(submissions.length / PAGE_SIZE)} ({submissions.length} total)
+                    </span>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={page === 0}
+                        onClick={() => setPage((p) => Math.max(0, p - 1))}
+                      >
+                        Previous
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={(page + 1) * PAGE_SIZE >= submissions.length}
+                        onClick={() => setPage((p) => p + 1)}
+                      >
+                        Next
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </CardContent>
