@@ -30,10 +30,10 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    const defaultPassword = Deno.env.get("BULK_INVITE_DEFAULT_PASSWORD");
+    const appUrl = Deno.env.get("APP_URL");
 
-    if (!supabaseUrl || !anonKey || !serviceRoleKey || !defaultPassword) {
-      throw new Error("Missing Supabase or BULK_INVITE_DEFAULT_PASSWORD environment configuration");
+    if (!supabaseUrl || !anonKey || !serviceRoleKey || !appUrl) {
+      throw new Error("Missing Supabase or APP_URL environment configuration");
     }
 
     const authHeader = req.headers.get("Authorization");
@@ -80,7 +80,7 @@ Deno.serve(async (req) => {
 
     for (const email of emails) {
       try {
-        const outcome = await ensureReviewerAccount(admin, email, defaultPassword);
+        const outcome = await ensureReviewerAccount(admin, email, `${appUrl}/reset-password`);
         if (outcome === "created") created.push(email);
         else updated.push(email);
       } catch (err) {
@@ -100,31 +100,32 @@ Deno.serve(async (req) => {
 async function ensureReviewerAccount(
   admin: ReturnType<typeof createClient>,
   email: string,
-  password: string
+  redirectTo: string
 ): Promise<"created" | "updated"> {
-  const { data: createData, error: createError } = await admin.auth.admin.createUser({
+  const { data: inviteData, error: inviteError } = await admin.auth.admin.inviteUserByEmail(
     email,
-    password,
-    email_confirm: true,
-    user_metadata: {
-      role: "reviewer",
-      full_name: email.split("@")[0],
-    },
-  });
+    {
+      redirectTo,
+      data: {
+        role: "reviewer",
+        full_name: email.split("@")[0],
+      },
+    }
+  );
 
-  if (!createError && createData.user) {
-    await upsertReviewerProfile(admin, createData.user.id, email);
+  if (!inviteError && inviteData.user) {
+    await upsertReviewerProfile(admin, inviteData.user.id, email);
     return "created";
   }
 
-  const message = createError?.message ?? "";
+  const message = inviteError?.message ?? "";
   const alreadyExists =
     message.toLowerCase().includes("already") ||
     message.toLowerCase().includes("registered") ||
     message.toLowerCase().includes("exists");
 
   if (!alreadyExists) {
-    throw new Error(message || "Failed to create user");
+    throw new Error(message || "Failed to invite user");
   }
 
   const userId = await resolveAuthUserId(admin, email);
